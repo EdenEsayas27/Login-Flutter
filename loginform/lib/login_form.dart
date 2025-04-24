@@ -12,7 +12,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Login Form',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        fontFamily: 'Roboto',
+      ),
       home: const LoginForm(),
     );
   }
@@ -28,19 +31,21 @@ class LoginForm extends StatefulWidget {
 class _LoginFormState extends State<LoginForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  // Hardcoded valid credentials for testing
   final String validUsername = 'eden123';
   final String validEmail = 'eden@email.com';
   final String validPassword = 'password123';
 
-  // Controllers to get the text input values
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // Validator functions
   String? _validateUsername(String? value) {
-    return value == null || value.isEmpty ? 'Username is required' : null;
+    if (value == null || value.isEmpty) {
+      return 'Username is required';
+    } else if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value)) {
+      return 'Only letters, numbers, and underscores allowed';
+    }
+    return null;
   }
 
   String? _validateEmail(String? value) {
@@ -54,26 +59,35 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   String? _validatePassword(String? value) {
-    return value == null || value.isEmpty ? 'Password is required' : null;
+    if (value == null || value.isEmpty) {
+      return 'Password is required';
+    } else if (value.length < 8) {
+      return 'Password must be at least 8 characters';
+    }
+    return null;
   }
 
-  // Submit function
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       String enteredUsername = _usernameController.text;
       String enteredEmail = _emailController.text;
       String enteredPassword = _passwordController.text;
 
-      // Check hardcoded credentials
       if (enteredUsername == validUsername &&
           enteredEmail == validEmail &&
           enteredPassword == validPassword) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login Successful!')),
+          const SnackBar(
+            content: Text('Login Successful!'),
+            backgroundColor: Colors.green, // ✅ Success
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid username, email, or password')),
+          const SnackBar(
+            content: Text('Invalid username, email, or password'),
+            backgroundColor: Colors.red, // ❌ Error
+          ),
         );
       }
     }
@@ -82,55 +96,94 @@ class _LoginFormState extends State<LoginForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login Form')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Username field
-                TextFormField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Username',
-                    hintText: 'Enter your username',
-                  ),
-                  validator: _validateUsername,
-                ),
-                const SizedBox(height: 16.0),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color.fromARGB(255, 129, 199, 231), Color.fromARGB(255, 129, 199, 231)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 550),
+            child: Card(
+              elevation: 12,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Welcome Back',
+                          style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 10),
+                        const Text(
+                          'Please login to continue',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 30),
 
-                // Email field
-                TextFormField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    hintText: 'Enter your email',
-                  ),
-                  validator: _validateEmail,
-                ),
-                const SizedBox(height: 16.0),
+                        // Username
+                        TextFormField(
+                          controller: _usernameController,
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(Icons.person),
+                            labelText: 'Username',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          validator: _validateUsername,
+                        ),
+                        const SizedBox(height: 16),
 
-                // Password field
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    hintText: 'Enter your password',
-                  ),
-                  obscureText: true,
-                  validator: _validatePassword,
-                ),
-                const SizedBox(height: 20.0),
+                        // Email
+                        TextFormField(
+                          controller: _emailController,
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(Icons.email),
+                            labelText: 'Email',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          validator: _validateEmail,
+                        ),
+                        const SizedBox(height: 16),
 
-                // Submit button
-                ElevatedButton(
-                  onPressed: _submitForm,
-                  child: const Text('Login'),
+                        // Password
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(Icons.lock),
+                            labelText: 'Password',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          validator: _validatePassword,
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Button
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _submitForm,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: const Text('Login', style: TextStyle(fontSize: 18,color: Colors.white)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
